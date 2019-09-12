@@ -1,0 +1,56 @@
+{
+  "name": "tom2a",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "clean": "rimraf dist/*",
+    "lint": "tslint -c tslint.json -p tsconfig.json --fix",
+    "tsc": "tsc",
+    "build": "npm-run-all clean lint tsc",
+    "dev:start": "npm-run-all build start",
+    "dev": "nodemon --watch src -e ts,ejs --exec npm run dev:start",
+    "start": "node .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "url": "https://github.com/damasch/tom2a",
+    "type": "git"
+  },
+  "_moduleAliases": {
+    "@tom2a": "dist"
+  },
+  "keywords": ["typescript", "neo4j", "rest", "api", "nodejs", "tom2a"],
+  "author": "David Schmidt <David_Manuel_Schmidt@hotmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/body-parser": "^1.17.1",
+    "axios": "^0.19.0",
+    "decko": "^1.2.0",
+    "dotenv": "^8.0.0",
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "express-session": "^1.16.2",
+    "helmet": "^3.20.0",
+    "module-alias": "^2.2.1",
+    "request": "^2.88.0",
+    "typeorm": "^0.2.18",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^4.17.0",
+    "@types/express-session": "^1.15.13",
+    "@types/fs-extra": "^8.0.0",
+    "@types/node": "^12.0.12",
+    "@types/shelljs": "^0.8.5",
+    "fs-extra": "^8.1.0",
+    "nodemon": "^1.19.1",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^2.6.3",
+    "shelljs": "^0.8.3",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.2"
+  }
+}
