@@ -30,11 +30,12 @@ export class HttpService {
    * @param {object} data
    */
   @bind
-  public postData(url: string, statements: object): Promise<any> {
+  public postData(url: string, data: object): Promise<any> {
     // tslint:disable-next-line:no-console
+    console.log(data);
     return new Promise((resolve, reject) => {
       this.axiosInstance
-        .post(url, { statements })
+        .post(url, data)
         .then((res) => {
           resolve(res);
         })

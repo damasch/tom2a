@@ -2,7 +2,7 @@
 import { bind } from "decko";
 import { NextFunction, Request, Response } from "express";
 
-import { Neo4jService } from "@tom2a/core";
+import { Neo4jModule, Neo4jService } from "@tom2a/core";
 
 import { UserModel } from "./user.model";
 
@@ -26,6 +26,7 @@ export class UserService  {
 
     const statements = [
       {
+        includeStats : Neo4jModule.stats,
         parameters: {},
         statement:  "MATCH (userModel:SYSTEM:USER) "
           + "WHERE NOT userModel:DELETED RETURN userModel, "
@@ -33,13 +34,8 @@ export class UserService  {
       }
     ];
     try {
-      const transaction: any = await this.neo4jService.transaction(statements);
+      const transaction: any = await this.neo4jService.transaction({statements});
       const userModels: UserModel[] = [];
-
-      // tslint:disable-next-line: no-console
-      console.log(transaction.results);
-      // tslint:disable-next-line: no-console
-      console.log(transaction.results.data);
 
       transaction.results[0].data.forEach((element: any) => {
         const userModel: UserModel = new UserModel();
@@ -49,7 +45,11 @@ export class UserService  {
         userModels.push(userModel);
       });
 
-      return res.json({ status: res.statusCode, data: userModels });
+      return res.json({
+        status: res.statusCode,
+        data: userModels,
+        stats: transaction.results[0].stats
+      });
     } catch (err) {
       return next(err);
     }
@@ -74,6 +74,7 @@ export class UserService  {
     const { name } = req.params;
     const statements = [
       {
+        includeStats : Neo4jModule.stats,
         parameters: {
           name
         },
@@ -81,8 +82,12 @@ export class UserService  {
       }
     ];
     try {
-      const transaction: any = await this.neo4jService.transaction(statements);
-      return res.json({ status: res.statusCode, data: transaction });
+      const transaction: any = await this.neo4jService.transaction({statements});
+      return res.json({
+        status: res.statusCode,
+        data: transaction,
+        stats: transaction.results[0].stats
+      });
     } catch (err) {
       return next(err);
     }
@@ -112,6 +117,7 @@ export class UserService  {
 
     const statements = [
       {
+        includeStats : Neo4jModule.stats,
         parameters: {
           userModel
         },
@@ -122,13 +128,17 @@ export class UserService  {
     ];
 
     try {
-      const transaction: any = await this.neo4jService.transaction(statements);
+      const transaction: any = await this.neo4jService.transaction({statements});
 
       userModel.assign(transaction.results[0].data[0].row[0]);
       userModel.assign(transaction.results[0].data[0].row[1]);
       userModel.assign(transaction.results[0].data[0].meta[0]);
 
-      return res.json({ status: res.statusCode, data: userModel, transaction });
+      return res.json({
+        status: res.statusCode,
+        data: userModel,
+        stats: transaction.results[0].stats
+      });
     } catch (err) {
       return next(err);
     }
