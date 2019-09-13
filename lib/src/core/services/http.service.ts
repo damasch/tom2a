@@ -31,8 +31,6 @@ export class HttpService {
    */
   @bind
   public postData(url: string, data: object): Promise<any> {
-    // tslint:disable-next-line:no-console
-    console.log(data);
     return new Promise((resolve, reject) => {
       this.axiosInstance
         .post(url, data)

@@ -72,20 +72,33 @@ export class UserService  {
   ): Promise<Response | void> {
 
     const { name } = req.params;
+
+    if (!name) {
+      return res.status(400).json({ status: 400, error: "Get User By Name - Invalid request" });
+    }
+
     const statements = [
       {
         includeStats : Neo4jModule.stats,
         parameters: {
           name
         },
-        statement:  "MATCH (userModel:SYSTEM:USER {name: {name} }) WHERE NOT n:DELETED RETURN n as user"
+        statement:  "MATCH (userModel:SYSTEM:USER {name: $name}) "
+          + "WHERE NOT userModel:DELETED RETURN userModel, "
+          + UserModel.cypherLabels()
       }
     ];
     try {
       const transaction: any = await this.neo4jService.transaction({statements});
+
+      const userModel: UserModel = new UserModel();
+      userModel.assign(transaction.results[0].data[0].row[0]);
+      userModel.assign(transaction.results[0].data[0].row[1]);
+      userModel.assign(transaction.results[0].data[0].meta[0]);
+
       return res.json({
         status: res.statusCode,
-        data: transaction,
+        data: userModel,
         stats: transaction.results[0].stats
       });
     } catch (err) {
@@ -110,7 +123,7 @@ export class UserService  {
   ): Promise<Response | void> {
 
     if (!req.body.user) {
-      return res.status(400).json({ status: 400, error: "Invalid request" });
+      return res.status(400).json({ status: 400, error: "Create User - Invalid request" });
     }
     const userModel: UserModel = new UserModel();
     userModel.assign(req.body.user);
@@ -137,6 +150,48 @@ export class UserService  {
       return res.json({
         status: res.statusCode,
         data: userModel,
+        stats: transaction.results[0].stats
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  /**
+   * Delete a user by uuid
+   * @param req
+   * @param res
+   * @param next
+   */
+  @bind
+  public async deleteUser(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+
+    const { uuid } = req.params;
+
+    if (!uuid) {
+      return res.status(400).json({ status: 400, error: "Get User By UUID - Invalid request" });
+    }
+
+    const statements = [
+      {
+        includeStats : true,
+        parameters: {
+          uuid
+        },
+        statement:  "MATCH (userModel:SYSTEM:USER {uuid: $uuid}) "
+          + " DETACH DELETE userModel"
+      }
+    ];
+    try {
+      const transaction: any = await this.neo4jService.transaction({statements});
+
+      return res.json({
+        status: res.statusCode,
+        data: { nodes_deleted: transaction.results[0].stats.nodes_deleted },
         stats: transaction.results[0].stats
       });
     } catch (err) {

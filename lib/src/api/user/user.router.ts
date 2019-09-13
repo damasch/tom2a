@@ -38,5 +38,9 @@ export class UserRouter extends RouterModule {
       "/",
       this._service.createUser
     );
+    this._router.delete(
+      "/:uuid",
+      this._service.deleteUser
+    );
   }
 }
