@@ -8,7 +8,6 @@ import { UserModel } from "./user.model";
 
 export class UserService  {
   private readonly neo4jService: Neo4jService = new Neo4jService();
-
   /**
    * Read all users from db (cached)
    *
@@ -24,31 +23,50 @@ export class UserService  {
     next: NextFunction
   ): Promise<Response | void> {
 
+    const um: any = new UserModel();
+    // tslint:disable-next-line: no-console
+
+    const name = um.NodeOptions.type ? um.NodeOptions.type : "node" + this.constructor.name;
+    const type = UserModel.name;
+    const labels = um.NodeOptions.labels.join(":");
+
+    if (name === type) {
+      // throw new Error("name cannot be eqaul with type ! name:" + name + ", type:" + type);
+    }
     const statements = [
       {
         includeStats : Neo4jModule.stats,
         parameters: {},
-        statement:  "MATCH (userModel:SYSTEM:USER) "
-          + "WHERE NOT userModel:DELETED RETURN userModel, "
-          + UserModel.cypherLabels()
+        statement:  `MATCH `
+          + ` (${name}:${labels}) `
+          + `WHERE `
+          + ` NOT ${name}:DELETED `
+          + `RETURN {`
+          + ` ${type}: { name: ${name}.name, admin: ${name}.admin }, `
+          + ` NodeInfo: { uuid: ${name}.uuid, update: ${name}.update, initialize: ${name}.initialize }, `
+          + ` NodeOptions: { labels: labels(${name}), name: '${name}' }, `
+          + ` NodeMeta: { id: id(${name})}`
+          + `} as Node`
       }
     ];
     try {
       const transaction: any = await this.neo4jService.transaction({statements});
       const userModels: UserModel[] = [];
-
       transaction.results[0].data.forEach((element: any) => {
-        const userModel: UserModel = new UserModel();
-        userModel.assign(element.row[0]);
-        userModel.assign(element.row[1]);
-        userModel.assign(element.meta[0]);
+        const userModel: any = new UserModel();
+        // tslint:disable-next-line: no-console
+        console.log(element.row[0].UserModel);
+        Object.assign(userModel, element.row[0].UserModel);
+        Object.assign(userModel.NodeInfo, element.row[0].NodeInfo);
+        Object.assign(userModel.NodeOptions, element.row[0].NodeOptions);
+        Object.assign(userModel.NodeMeta, element.row[0].NodeMeta);
         userModels.push(userModel);
       });
 
       return res.json({
         status: res.statusCode,
         data: userModels,
-        stats: transaction.results[0].stats
+        stats: null
       });
     } catch (err) {
       return next(err);
@@ -85,16 +103,16 @@ export class UserService  {
         },
         statement:  "MATCH (userModel:SYSTEM:USER {name: $name}) "
           + "WHERE NOT userModel:DELETED RETURN userModel, "
-          + UserModel.cypherLabels()
+          + " { labels: labels(userModel) } as labels "
       }
     ];
     try {
       const transaction: any = await this.neo4jService.transaction({statements});
 
       const userModel: UserModel = new UserModel();
-      userModel.assign(transaction.results[0].data[0].row[0]);
-      userModel.assign(transaction.results[0].data[0].row[1]);
-      userModel.assign(transaction.results[0].data[0].meta[0]);
+      Object.assign(userModel, transaction.results[0].data[0].row[0]);
+      Object.assign(userModel, transaction.results[0].data[0].row[0]);
+      Object.assign(userModel, transaction.results[0].data[0].meta[0]);
 
       return res.json({
         status: res.statusCode,
@@ -126,7 +144,7 @@ export class UserService  {
       return res.status(400).json({ status: 400, error: "Create User - Invalid request" });
     }
     const userModel: UserModel = new UserModel();
-    userModel.assign(req.body.user);
+    // userModel.assign(req.body.user);
 
     const statements = [
       {
@@ -135,7 +153,7 @@ export class UserService  {
           userModel
         },
         statement:  `MERGE (userModel:SYSTEM:USER {name: $userModel.name, admin: $userModel.admin}) ` +
-          userModel.onCreateString("userModel") +
+          // userModel.onCreateString("userModel") +
           ` RETURN userModel, { labels: labels(userModel) } as labels`
       }
     ];
@@ -143,10 +161,13 @@ export class UserService  {
     try {
       const transaction: any = await this.neo4jService.transaction({statements});
 
-      userModel.assign(transaction.results[0].data[0].row[0]);
-      userModel.assign(transaction.results[0].data[0].row[1]);
-      userModel.assign(transaction.results[0].data[0].meta[0]);
-
+      Object.assign(userModel, transaction.results[0].data[0].row[0]);
+      Object.assign(userModel, transaction.results[0].data[0].row[1]);
+      Object.assign(userModel, transaction.results[0].data[0].meta[0]);
+      // userModel.assign(transaction.results[0].data[0].row[0]);
+      // userModel.assign(transaction.results[0].data[0].row[1]);
+      // userModel.assign(transaction.results[0].data[0].meta[0]);
+      res.statusCode = 201;
       return res.json({
         status: res.statusCode,
         data: userModel,

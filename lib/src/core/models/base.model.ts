@@ -10,6 +10,7 @@ export class BaseModelModule {
   public static cypherLabels(): string {
     return " { labels: labels(userModel) } as labels ";
   }
+
   /**
    * @type {string[]}
    * @memberof BaseModelModule

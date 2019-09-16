@@ -1,7 +1,13 @@
 
-import { BaseModelModule } from "@tom2a/core";
+import { Node, NodeOptions } from "@tom2a/core/decorator/node.decorator";
 
-export class UserModel extends BaseModelModule {
-  public name: string = null;
-  public admin: boolean = null;
+@Node ({
+  NodeOptions: {
+    labels: ["SYSTEM", "USER"],
+    type: UserModel.name
+  }
+})
+export class UserModel {
+  public name: string;
+  public admin: boolean;
 }

@@ -86,7 +86,7 @@ ON CREATE SET
 ON MATCH SET 
   cluster.update = timestamp(),
   subcluster.update = timestamp(),
-  sub.upadte = timestamp()
+  sub.update = timestamp()
 RETURN cluster, subcluster, sub
 
 // Add User if not exits
