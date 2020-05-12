@@ -25,27 +25,23 @@ export class UserService  {
 
     const um: any = new UserModel();
     // tslint:disable-next-line: no-console
+    console.log(um);
+    const type = um.nodeMeta.type ? um.nodeMeta.type : "node" + this.constructor.name;
+    const labels = um.nodeMeta.labels.join(":");
 
-    const name = um.NodeOptions.type ? um.NodeOptions.type : "node" + this.constructor.name;
-    const type = UserModel.name;
-    const labels = um.NodeOptions.labels.join(":");
-
-    if (name === type) {
-      // throw new Error("name cannot be eqaul with type ! name:" + name + ", type:" + type);
-    }
     const statements = [
       {
         includeStats : Neo4jModule.stats,
         parameters: {},
         statement:  `MATCH `
-          + ` (${name}:${labels}) `
+          + ` (${type}:${labels}) `
           + `WHERE `
-          + ` NOT ${name}:DELETED `
-          + `RETURN {`
-          + ` ${type}: { name: ${name}.name, admin: ${name}.admin }, `
-          + ` NodeInfo: { uuid: ${name}.uuid, update: ${name}.update, initialize: ${name}.initialize }, `
-          + ` NodeOptions: { labels: labels(${name}), name: '${name}' }, `
-          + ` NodeMeta: { id: id(${name})}`
+          + ` NOT ${type}:DELETED `
+          + `RETURN { `
+          + ` name: ${type}.name, `
+          + ` admin: ${type}.admin, `
+          + ` nodeInfo: { uuid: ${type}.uuid, update: ${type}.update, initialize: ${type}.initialize }, `
+          + ` nodeMeta: { labels: labels(${type}), name: '${type}', id: id(${type})}`
           + `} as Node`
       }
     ];
@@ -54,12 +50,7 @@ export class UserService  {
       const userModels: UserModel[] = [];
       transaction.results[0].data.forEach((element: any) => {
         const userModel: any = new UserModel();
-        // tslint:disable-next-line: no-console
-        console.log(element.row[0].UserModel);
-        Object.assign(userModel, element.row[0].UserModel);
-        Object.assign(userModel.NodeInfo, element.row[0].NodeInfo);
-        Object.assign(userModel.NodeOptions, element.row[0].NodeOptions);
-        Object.assign(userModel.NodeMeta, element.row[0].NodeMeta);
+        userModel.assign(element.row[0]);
         userModels.push(userModel);
       });
 

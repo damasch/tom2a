@@ -1,3 +1,4 @@
+import { NodeModelModule } from "@tom2a/core/models/node.model";
 
 /**
  * Base Model module for common node properties an functions
@@ -5,62 +6,7 @@
  * @export
  * @class BaseModelModule
  */
-export class BaseModelModule {
-
-  public static cypherLabels(): string {
-    return " { labels: labels(userModel) } as labels ";
-  }
-
-  /**
-   * @type {string[]}
-   * @memberof BaseModelModule
-   */
-  public labels: string[] = [];
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public initialize: string = "";
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public uuid: string = "";
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public update: string = "";
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public id: string = "";
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public type: string = "";
-
-  /**
-   * @type {string}
-   * @memberof BaseModelModule
-   */
-  public deleted: string = "";
-
-  /**
-   * Create a model
-   * @param params {any}
-   */
-  public constructor(params?: any) {
-    this.assign(params);
-  }
-
+export class BaseModelModule extends NodeModelModule {
   /**
    * Returns the Create string
    * @readonly
@@ -69,11 +15,11 @@ export class BaseModelModule {
    * @type {string}
    * @memberof BaseModelModule
    */
-  public onCreateString(nodeName: string): string {
+  public onCreateString(): string {
     return ` ON CREATE SET ` +
-      `${nodeName}.uuid = randomUUID(), ` +
-      `${nodeName}.initialize = timestamp(), ` +
-      `${nodeName}.update = timestamp() `;
+      `${this.nodeMeta.type}.uuid = randomUUID(), ` +
+      `${this.nodeMeta.type}.initialize = timestamp(), ` +
+      `${this.nodeMeta.type}.update = timestamp() `;
   }
 
   /**
@@ -84,17 +30,8 @@ export class BaseModelModule {
    * @type {string}
    * @memberof BaseModelModule
    */
-  public onMergeString(nodeName: string): string {
+  public onMergeString(): string {
     return ` ON MERGE SET ` +
-    `${nodeName}.update = timestamp() `;
-  }
-
-  /**
-   * Assign values to the model
-   * @param {*} [params]
-   * @memberof BaseModelModule
-   */
-  public assign(params?: any): void {
-    Object.assign(this, params);
+    `${this.nodeMeta.type}.update = timestamp() `;
   }
 }

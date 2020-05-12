@@ -1,13 +1,15 @@
 
-import { Node, NodeOptions } from "@tom2a/core/decorator/node.decorator";
+import { Node } from "@tom2a/core/decorator/node.decorator";
+
+import { BaseModelModule } from "@tom2a/core/";
 
 @Node ({
-  NodeOptions: {
+  nodeMeta: {
     labels: ["SYSTEM", "USER"],
     type: UserModel.name
   }
 })
-export class UserModel {
+export class UserModel extends BaseModelModule {
   public name: string;
   public admin: boolean;
 }
